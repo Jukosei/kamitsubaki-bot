@@ -205,6 +205,26 @@ async def on_message(message):
                 await message.remove_reaction("⏳", client.user)
             except discord.errors.Forbidden:
                 pass
+                
+# Renderのポートチェック（タイムアウト）を回避するためのダミーWebサーバー
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
+class DummyServer(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+    def log_message(self, format, *args):
+        pass # ログをスッキリさせるため非表示
+
+def run_dummy_server():
+    # Renderが指定してくるポート（なければ自動で10000）で起動します
+    port = int(os.getenv("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), DummyServer)
+    server.serve_forever()
+
+# Discord Botの起動直前に、裏側でダミーサーバーを同時に立ち上げます
 import os
+threading.Thread(target=run_dummy_server, daemon=True).start()
 client.run(os.getenv("DISCORD_BOT_TOKEN"))
