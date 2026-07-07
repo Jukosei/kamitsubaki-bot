@@ -10,7 +10,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-CARDS_DIR = "./cards"  # カード画像を保存しているフォルダ
+CARDS_DIR = "."  # フォルダを作らず、bot.pyと同じ場所から直接画像を探す
 
 def decode_kcg_code(kcg_code: str) -> list:
     """KCG-から始まる非公式コードをカードIDのリストにデコードする"""
