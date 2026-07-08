@@ -30,9 +30,9 @@ def decode_kcg_code(kcg_code: str) -> list:
         raise ValueError(f"KCGコードの解読に失敗しました: {e}")
 
 def generate_official_like_image(card_ids: list, card_counts: Counter, unique_card_ids: list, original_code: str) -> io.BytesIO:
-    """公式HP風のベージュ背景・額縁が入ったデッキ画像を生成する（超巨大数字バグ修正版）"""
+    """公式HP風のベージュ背景・額縁が入ったデッキ画像を生成する（フォント不要・超巨大デジタル数字完全版）"""
     card_w, card_h = 135, 185  # カードサイズ
-    number_area_h = 45         # 数字枠の高さ
+    number_area_h = 50         # 数字枠の高さ
     
     # カード同士の「隙間（間隔）」を設定
     gap_x = 10  # 横の隙間（10ピクセル）
@@ -50,45 +50,24 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
     side_margin = 60   # 左右余白
     bottom_margin = 60 # 下部余白
 
-    # 隙間の分を含めて、全体のキャンバスサイズを正確に計算
+    # 全体のキャンバスサイズを計算
     canvas_w = (card_w * max_cols) + (gap_x * (max_cols - 1)) + (side_margin * 2)
     canvas_h = top_margin + (slot_h * rows) - gap_y + bottom_margin
 
-    # 1. 公式風の高級感のあるベージュ背景画像を作成 (RGB)
+    # 1. ベージュ背景画像を作成
     deck_canvas = Image.new("RGB", (canvas_w, canvas_h), (250, 247, 240))
     draw = ImageDraw.Draw(deck_canvas)
 
     # 2. 飾り枠（額縁線）の描画
     border_offset = 20
-    draw.rectangle(
-        [border_offset, border_offset, canvas_w - border_offset, canvas_h - border_offset],
-        outline=(205, 190, 170), width=2
-    )
-    # 内側の細い線
-    draw.rectangle(
-        [border_offset + 6, border_offset + 6, canvas_w - (border_offset + 6), canvas_h - (border_offset + 6)],
-        outline=(225, 215, 200), width=1
-    )
+    draw.rectangle([border_offset, border_offset, canvas_w - border_offset, canvas_h - border_offset], outline=(205, 190, 170), width=2)
+    draw.rectangle([border_offset + 6, border_offset + 6, canvas_w - (border_offset + 6), canvas_h - (border_offset + 6)], outline=(225, 215, 200), width=1)
 
-    # 3. フォントの読み込み
-    def get_font(size, is_bold=False):
-        font_names = ["msmeiryo.ttc", "msgothic.ttc", "arialbd.ttf"] if is_bold else ["msmeiryo.ttc", "msgothic.ttc", "arial.ttf"]
-        for name in font_names:
-            try:
-                return ImageFont.truetype(name, size)
-            except IOError:
-                continue
-        return ImageFont.load_default()
-
-    # ★数字のサイズを「38」の特大太字に設定（枠に綺麗に収まる最大級のサイズ）
-    font_num = get_font(38, is_bold=True)
-
-    # 4. カードと枚数を順番に配置
+    # 3. カードと枚数を順番に配置
     for index, card_id in enumerate(unique_card_ids):
         col = index % max_cols
         row = index // max_cols
         
-        # 横の隙間（gap_x）と縦の隙間（slot_h）を計算に含めて配置座標を決定
         x = side_margin + (col * (card_w + gap_x))
         y = top_margin + (row * slot_h)
 
@@ -104,38 +83,60 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
             deck_canvas.paste(error_box, (x, y))
 
         # --- 下部の枚数表示エリア ---
-        num_box_y = y + card_h + 5
-        box_padding = 4  # 左右の隙間を狭くして白いボックスを広げます
+        num_box_y = y + card_h + 4
+        box_padding = 4  
         box_x1 = x + box_padding
         box_x2 = x + card_w - box_padding
         box_y1 = num_box_y
         box_y2 = num_box_y + number_area_h
         
-        # 白い背景枠を描画（線を少し太くしてくっきり見やすく）
+        # 白い背景枠を描画
         draw.rectangle([box_x1, box_y1, box_x2, box_y2], fill=(255, 255, 255), outline=(220, 210, 195), width=2)
         
-        # 枚数の数字
-        count_text = str(card_counts[card_id])
+        # 枚数の数字を取得
+        count = card_counts[card_id]
         
-        # ★【超重要バグ修正】タプルの位置番号を指定して、正確な文字の「幅」と「高さ」を計算します
-        n_box = draw.textbbox((0, 0), count_text, font=font_num)
-        text_w = n_box[2] - n_box[0]
-        text_h = n_box[3] - n_box[1]
+        # ボックスの中心座標を計算
+        bx_center = box_x1 + (box_x2 - box_x1) // 2
+        by_center = box_y1 + (box_y2 - box_y1) // 2
         
-        # 文字が白いボックスのど真ん中に配置されるように計算
-        text_x = box_x1 + ((box_x2 - box_x1) - text_w) // 2
-        text_y = box_y1 + ((box_y2 - box_y1) - text_h) // 2 - 4 # 上下の微調整
+        # ★フォントを使わず、太い線（図形）の組み合わせで「巨大な数字」を1枚ずつ直に描画する処理
+        # 白いボックスいっぱいに広がる太さ5ピクセルのくっきりした黒い数字になります
+        color = (40, 35, 30)
+        w = 5  # 線の太さ
         
-        # 黒い文字で枚数を描画
-        draw.text((text_x, text_y), count_text, fill=(40, 35, 30), font=font_num)
+        if count == 1:
+            # 「1」の描画（中央に縦棒）
+            draw.line([bx_center, by_center - 15, bx_center, by_center + 15], fill=color, width=w)
+        elif count == 2:
+            # 「2」の描画
+            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
+            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center], fill=color, width=w)      # 右上縦
+            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center - 12, by_center, bx_center - 12, by_center + 15], fill=color, width=w)      # 左下縦
+            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
+        elif count == 3:
+            # 「3」の描画
+            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
+            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center + 15], fill=color, width=w) # 右縦一閃
+            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
+        elif count == 4:
+            # 「4」の描画
+            draw.line([bx_center - 12, by_center - 15, bx_center - 12, by_center], fill=color, width=w)      # 左上縦
+            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center + 15], fill=color, width=w) # 右縦一閃
+            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
+        else:
+            # 5枚以上の場合（5の形を描画）
+            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
+            draw.line([bx_center - 12, by_center - 15, bx_center - 12, by_center], fill=color, width=w)      # 左上縦
+            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center + 12, by_center, bx_center + 12, by_center + 15], fill=color, width=w)      # 右下縦
+            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
 
-    # 5. 最下部に公式風のフッターロゴ文字を配置
-    font_code = get_font(20, is_bold=False)
+    # 4. 最下部に公式風のフッターロゴ文字を配置
     footer_text = "- KAMITSUBAKI CARD GAME -"
-    f_box = draw.textbbox((0, 0), footer_text, font=font_code)
-    # ★こちらも正確な計算式に修正
-    footer_w = f_box[2] - f_box[0]
-    draw.text(((canvas_w - footer_w) // 2, canvas_h - 45), footer_text, fill=(180, 170, 155), font=font_code)
+    draw.text((canvas_w // 2 - 130, canvas_h - 45), footer_text, fill=(180, 170, 155))
 
     # メモリ上で画像データを保存
     img_binary = io.BytesIO()
