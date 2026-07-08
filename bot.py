@@ -100,39 +100,40 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
         bx_center = box_x1 + (box_x2 - box_x1) // 2
         by_center = box_y1 + (box_y2 - box_y1) // 2
         
-        # ★フォントを使わず、太い線（図形）の組み合わせで「巨大な数字」を1枚ずつ直に描画する処理
-        # 白いボックスいっぱいに広がる太さ5ピクセルのくっきりした黒い数字になります
-        color = (40, 35, 30)
-        w = 5  # 線の太さ
+                # ★フォントを使わず、太い線（図形）の組み合わせで「巨大な数字」を1枚ずつ直に描画する処理
+        # 公式のフォントサイズにそっくりな、ちょうどいい太さと大きさに調整しました
+        color = (60, 55, 50)  # 公式に近い、少し優しい黒褐色
+        w = 4  # 線の太さを「5」から「4」に細くしてスマートに
         
+        # 数字の高さを全体的に小さくスマートに（上下10ピクセル幅に縮小）
         if count == 1:
             # 「1」の描画（中央に縦棒）
-            draw.line([bx_center, by_center - 15, bx_center, by_center + 15], fill=color, width=w)
+            draw.line([bx_center, by_center - 11, bx_center, by_center + 11], fill=color, width=w)
         elif count == 2:
             # 「2」の描画
-            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
-            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center], fill=color, width=w)      # 右上縦
-            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
-            draw.line([bx_center - 12, by_center, bx_center - 12, by_center + 15], fill=color, width=w)      # 左下縦
-            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
+            draw.line([bx_center - 9, by_center - 11, bx_center + 9, by_center - 11], fill=color, width=w) # 上横
+            draw.line([bx_center + 9, by_center - 11, bx_center + 9, by_center], fill=color, width=w)      # 右上縦
+            draw.line([bx_center - 9, by_center, bx_center + 9, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center - 9, by_center, bx_center - 9, by_center + 11], fill=color, width=w)      # 左下縦
+            draw.line([bx_center - 9, by_center + 11, bx_center + 9, by_center + 11], fill=color, width=w) # 下横
         elif count == 3:
             # 「3」の描画
-            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
-            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center + 15], fill=color, width=w) # 右縦一閃
-            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
-            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
+            draw.line([bx_center - 9, by_center - 11, bx_center + 9, by_center - 11], fill=color, width=w) # 上横
+            draw.line([bx_center + 9, by_center - 11, bx_center + 9, by_center + 11], fill=color, width=w) # 右縦
+            draw.line([bx_center - 9, by_center, bx_center + 9, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center - 9, by_center + 11, bx_center + 9, by_center + 11], fill=color, width=w) # 下横
         elif count == 4:
             # 「4」の描画
-            draw.line([bx_center - 12, by_center - 15, bx_center - 12, by_center], fill=color, width=w)      # 左上縦
-            draw.line([bx_center + 12, by_center - 15, bx_center + 12, by_center + 15], fill=color, width=w) # 右縦一閃
-            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center - 9, by_center - 11, bx_center - 9, by_center], fill=color, width=w)      # 左上縦
+            draw.line([bx_center + 9, by_center - 11, bx_center + 9, by_center + 11], fill=color, width=w) # 右縦
+            draw.line([bx_center - 9, by_center, bx_center + 9, by_center], fill=color, width=w)          # 中横
         else:
-            # 5枚以上の場合（5の形を描画）
-            draw.line([bx_center - 12, by_center - 15, bx_center + 12, by_center - 15], fill=color, width=w) # 上横
-            draw.line([bx_center - 12, by_center - 15, bx_center - 12, by_center], fill=color, width=w)      # 左上縦
-            draw.line([bx_center - 12, by_center, bx_center + 12, by_center], fill=color, width=w)          # 中横
-            draw.line([bx_center + 12, by_center, bx_center + 12, by_center + 15], fill=color, width=w)      # 右下縦
-            draw.line([bx_center - 12, by_center + 15, bx_center + 12, by_center + 15], fill=color, width=w) # 下横
+            # 5枚以上の場合
+            draw.line([bx_center - 9, by_center - 11, bx_center + 9, by_center - 11], fill=color, width=w) # 上横
+            draw.line([bx_center - 9, by_center - 11, bx_center - 9, by_center], fill=color, width=w)      # 左上縦
+            draw.line([bx_center - 9, by_center, bx_center + 9, by_center], fill=color, width=w)          # 中横
+            draw.line([bx_center + 9, by_center, bx_center + 9, by_center + 11], fill=color, width=w)      # 右下縦
+            draw.line([bx_center - 9, by_center + 11, bx_center + 9, by_center + 11], fill=color, width=w) # 下横
 
     # 4. 最下部に公式風のフッターロゴ文字を配置
     footer_text = "- KAMITSUBAKI CARD GAME -"
