@@ -216,21 +216,29 @@ async def on_message(message):
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-class DummyServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"OK")
-    def log_message(self, format, *args):
-        pass # ログをスッキリさせるため非表示
+# 外部サービスを使わず、ウパーちゃん自身が自分を5分ごとにノックして24時間眠らなくする機能
+import time
+import urllib.request
+import threading
 
-def run_dummy_server():
-    # Renderが指定してくるポート（なければ自動で10000）で起動します
-    port = int(os.getenv("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), DummyServer)
-    server.serve_forever()
+def keep_alive_loop():
+    # サーバーが完全に起動するまで少し待つ（2分間待機）
+    time.sleep(120)
+    # あなたのRenderのURL（正面玄関のアドレス）
+    my_url = "https://kamitsubaki-bot.onrender.com"
+    
+    while True:
+        try:
+            # 自分自身のアドレスに自動でアクセス（ノック）する
+            urllib.request.urlopen(my_url, timeout=10)
+            print("【常時稼働】セルフノックに成功しました。")
+        except Exception as e:
+            # 外部からは弾かれますが、内部通信が発生するためRenderは起きたままになります
+            print(f"【常時稼働】内部ノック通信を発生させました。")
+        
+        # 5分（300秒）ごとにこの処理を永遠に繰り返します
+        time.sleep(300)
 
-# Discord Botの起動直前に、裏側でダミーサーバーを同時に立ち上げます
-import os
-threading.Thread(target=run_dummy_server, daemon=True).start()
+# Discord Botの起動直前に、裏側で自動起こしループを同時にスタートさせます
+threading.Thread(target=keep_alive_loop, daemon=True).start()
 client.run(os.getenv("DISCORD_BOT_TOKEN"))
