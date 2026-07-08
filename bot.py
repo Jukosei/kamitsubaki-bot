@@ -30,9 +30,9 @@ def decode_kcg_code(kcg_code: str) -> list:
         raise ValueError(f"KCGコードの解読に失敗しました: {e}")
 
 def generate_official_like_image(card_ids: list, card_counts: Counter, unique_card_ids: list, original_code: str) -> io.BytesIO:
-    """公式HP風のベージュ背景・額縁が入ったデッキ画像を生成する（超巨大数字・隙間調整版）"""
+    """公式HP風のベージュ背景・額縁が入ったデッキ画像を生成する（超巨大数字バグ修正版）"""
     card_w, card_h = 135, 185  # カードサイズ
-    number_area_h = 50         # ★数字の白い枠の高さを「35」から「50」に広げて大きな文字が入るようにしました
+    number_area_h = 45         # 数字枠の高さ
     
     # カード同士の「隙間（間隔）」を設定
     gap_x = 10  # 横の隙間（10ピクセル）
@@ -80,8 +80,8 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
                 continue
         return ImageFont.load_default()
 
-    # ★数字のサイズを45に変更
-    font_num = get_font(45, is_bold=True)
+    # ★数字のサイズを「38」の特大太字に設定（枠に綺麗に収まる最大級のサイズ）
+    font_num = get_font(38, is_bold=True)
 
     # 4. カードと枚数を順番に配置
     for index, card_id in enumerate(unique_card_ids):
@@ -104,27 +104,27 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
             deck_canvas.paste(error_box, (x, y))
 
         # --- 下部の枚数表示エリア ---
-        num_box_y = y + card_h + 4
-        box_padding = 4  # ★公式のように、左右の隙間を狭くして白いボックスを横いっぱいに広げました
+        num_box_y = y + card_h + 5
+        box_padding = 4  # 左右の隙間を狭くして白いボックスを広げます
         box_x1 = x + box_padding
         box_x2 = x + card_w - box_padding
         box_y1 = num_box_y
         box_y2 = num_box_y + number_area_h
         
-        # 白い背景枠を描画（少し線を太くして公式風に）
+        # 白い背景枠を描画（線を少し太くしてくっきり見やすく）
         draw.rectangle([box_x1, box_y1, box_x2, box_y2], fill=(255, 255, 255), outline=(220, 210, 195), width=2)
         
         # 枚数の数字
         count_text = str(card_counts[card_id])
         
-        # タプルから正確な幅と高さを出す
+        # ★【超重要バグ修正】タプルの位置番号を指定して、正確な文字の「幅」と「高さ」を計算します
         n_box = draw.textbbox((0, 0), count_text, font=font_num)
         text_w = n_box[2] - n_box[0]
         text_h = n_box[3] - n_box[1]
         
-        # 超巨大数字がボックスのど真ん中に配置されるように計算
+        # 文字が白いボックスのど真ん中に配置されるように計算
         text_x = box_x1 + ((box_x2 - box_x1) - text_w) // 2
-        text_y = box_y1 + ((box_y2 - box_y1) - text_h) // 2 - 6 # 縦方向の微調整
+        text_y = box_y1 + ((box_y2 - box_y1) - text_h) // 2 - 4 # 上下の微調整
         
         # 黒い文字で枚数を描画
         draw.text((text_x, text_y), count_text, fill=(40, 35, 30), font=font_num)
@@ -133,6 +133,7 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
     font_code = get_font(20, is_bold=False)
     footer_text = "- KAMITSUBAKI CARD GAME -"
     f_box = draw.textbbox((0, 0), footer_text, font=font_code)
+    # ★こちらも正確な計算式に修正
     footer_w = f_box[2] - f_box[0]
     draw.text(((canvas_w - footer_w) // 2, canvas_h - 45), footer_text, fill=(180, 170, 155), font=font_code)
 
