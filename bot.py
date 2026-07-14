@@ -164,16 +164,6 @@ async def on_message(message):
     card_ids = []
     is_deck_code = False
 
-    # 1. 「KCG-」から始まるコードを自動検知
-    # ★文字列に何が含まれていようが、頭文字が「KCG-」であれば「絶対に」反応するように修正しました！
-    if clean_content.startswith("KCG-"):
-        is_deck_code = True
-        try:
-            card_ids = decode_kcg_code(clean_content)
-        except Exception as e:
-            print(f"デコードエラー: {e}")
-            return
-
     # 2. 「AA-01/exA-1」のようなスラッシュ区切りを自動検知
     elif "/" in clean_content:
         # スラッシュで区切る
