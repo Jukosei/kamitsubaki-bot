@@ -164,8 +164,8 @@ async def on_message(message):
     card_ids = []
     is_deck_code = False
 
-    # 2. 「AA-01/exA-1」のようなスラッシュ区切りを自動検知
-    elif "/" in clean_content:
+    # 【修正】elif ではなく if に変更
+    if "/" in clean_content:
         # スラッシュで区切る
         potential_ids = [cid.strip() for cid in clean_content.split("/") if cid.strip()]
         # IDらしき英数字や記号の塊が3枚以上並んでいれば通すルール
