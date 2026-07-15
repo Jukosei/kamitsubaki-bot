@@ -73,7 +73,10 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
 
     # 3. フォントの読み込み
     def get_font(size, is_bold=False):
-        font_names = ["msmeiryo.ttc", "msgothic.ttc", "arialbd.ttf"] if is_bold else ["msmeiryo.ttc", "msgothic.ttc", "arial.ttf"]
+        if is_bold:
+            font_names = ["DejaVuSans-Bold.ttf", "LiberationSans-Bold.ttf", "msmeiryo.ttc", "msgothic.ttc", "arialbd.ttf"]
+        else:
+            font_names = ["DejaVuSans.ttf", "LiberationSans.ttf", "msmeiryo.ttc", "msgothic.ttc", "arial.ttf"]
         for name in font_names:
             try:
                 return ImageFont.truetype(name, size)
@@ -82,7 +85,7 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
         return ImageFont.load_default()
 
     font_num = get_font(28, is_bold=True)
-
+    
     # 4. カードと枚数を順番に配置
     for index, card_id in enumerate(unique_card_ids):
         col = index % max_cols
