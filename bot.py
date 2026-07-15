@@ -1,10 +1,10 @@
 import discord
-from PIL import Image, ImageDraw, ImageFont, keep_alive
+from PIL import Image, ImageDraw, ImageFont
+from keep_alive import keep_alive
 import os
 import io
 import base64
 import re
-import keep_alive
 from collections import Counter
 
 intents = discord.Intents.default()
