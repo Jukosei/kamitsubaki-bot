@@ -92,8 +92,8 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
         x = side_margin + (col * (card_w + gap_x))
         y = top_margin + (row * slot_h)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-card_path = os.path.join(BASE_DIR, f"{card_id}.png")
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        card_path = os.path.join(BASE_DIR, f"{card_id}.png")
         
         # --- カード画像のペースト ---
         if os.path.exists(card_path):
