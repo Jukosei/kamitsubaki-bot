@@ -121,13 +121,13 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
         count_text = str(card_counts[card_id])
         
         # ★タプルから [2] - [0] を引いて正確な幅と高さを出すように修正
-        n_box = draw.textbbox((0, 0), count_text, font=font_num)
-        text_w = n_box[2] - n_box[0]
-        text_h = n_box[3] - n_box[1]
+        # Pillowの新しい方式で文字の正確な横幅を取得
+        text_w = draw.textlength(count_text, font=font_num)
         
+        # 白い枠の中心にぴったり文字がくるように計算（はみ出し防止）
         text_x = box_x1 + ((box_x2 - box_x1) - text_w) // 2
-        text_y = box_y1 + ((box_y2 - box_y1) - text_h) // 2 - 4
-        
+        text_y = box_y1 + ((box_y2 - box_y1) - 32) // 2 - 2
+
         draw.text((text_x, text_y), count_text, fill=(60, 55, 50), font=font_num)
 
     # 5. 最下部に公式風のフッターロゴ文字を配置
