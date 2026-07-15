@@ -81,7 +81,7 @@ def generate_official_like_image(card_ids: list, card_counts: Counter, unique_ca
                 continue
         return ImageFont.load_default()
 
-    font_num = get_font(26, is_bold=True)
+    font_num = get_font(46, is_bold=True)
 
     # 4. カードと枚数を順番に配置
     for index, card_id in enumerate(unique_card_ids):
